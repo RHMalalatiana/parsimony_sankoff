@@ -138,8 +138,8 @@ def parsimonious_Sank(tree_list,data,alphabet,cost_matrix):
             - alphabet : alphabet  of allowed character states
             - cost: cost matrix
     '''
-    minim=Sankoff_tree(tree_list1[0],data,alphabet,cost_matrix) 
-    most_parsimonious=[tree_list1[0]]
+    minim=Sankoff_tree(tree_list[0],data,alphabet,cost_matrix) 
+    most_parsimonious=[tree_list[0]]
     for tree in tree_list[1:]:
         score=Sankoff_tree(tree,data,alphabet,cost_matrix)
         if score<minim:
