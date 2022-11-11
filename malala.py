@@ -1,10 +1,9 @@
-
 import copy
 import random
 import math as M
 import numpy as np 
 
-#  TREE GENERATION FUNCTIONS
+#  TREE GENERATOR FUNCTIONS
 
 """"
 Note that both the functions below are recursive.
@@ -56,6 +55,10 @@ def enumerate_labelled_trees(leaf_list):
       all_trees=new_all_trees
     return(all_trees)
 
+
+
+# COUNTING CHANGE (SANKOFF)
+
 def evaluate_Sankoff_tableau(sankoff_tableau_left,sankoff_tableau_right, cost_matrix):
     '''
     Input: Sankoff tableaux for the left and right children of node
@@ -73,14 +76,14 @@ def evaluate_Sankoff_tableau(sankoff_tableau_left,sankoff_tableau_right, cost_ma
 
 def Sankoff(tree, alphabet, speciesCharacters, cost_matrix):
     '''
-    This function compute the number of change for one character
+    This function computes the number of changes for one character per species
     Input:
         - tree
         - alphabet
         - speciesCharacters
         - cost_matrix
     Output:
-        - score,vector cost of the root
+        - score, vector cost of the root
     '''
     def leaf_tableau(char_in):
       index=alphabet.index(char_in)
@@ -111,24 +114,58 @@ def Sankoff(tree, alphabet, speciesCharacters, cost_matrix):
     score=min(root_tableau)
     return((score, root_tableau))   
 
-def Sankoff_tree(tree,data,alphabet,cost_matrix):
+def Sankoff_tree(tree, data, alphabet, cost_matrix):
     '''
-    This function count the number of change for all the character of species
+    This function counts the number of changes for all characters of species
     Input:
-            - Tree
-            - data: matrix which represents all the characters of each species, species in the row and character in the column    
+            - tree
+            - data : matrix which represents all the characters of each species, species in the row and character in the column    
+                 (actually a list of species genomes, where the species genome is a list of characters)
             - alphabet 
             - cost_matrix
     Output:
-            - count: parsimony score for the given tree
+            - count: parsimony score of input tree
     '''
     count=0
-    nrw,ncol=np.shape(data)
-    for i in range(ncol):
-        r1=[row[i] for row in data]
-        score,root_cost=Sankoff(tree,alphabet,r1,cost_matrix)
+    nbases=len(data[0])
+    for ibase in range(nbases):
+        baseList=[species[ibase] for species in data]
+        score,root_tableau=Sankoff(tree,alphabet,baseList,cost_matrix)
         count+=score
-    return count
+    return(count)
+
+
+# MOST PARSIMONIOUS TREE (SANKOFF)
+
+def pick_element(l):
+    '''
+    Input: list
+    Output: list of element in l
+    '''
+    if type(l[0])==int and type(l[1])==int:
+        return [l]
+    elif type(l[0])==int and type(l[1])!=int:
+        return [l[0]]+pick_element(l[1])
+    elif type(l[1])==int and type(l[0])!=int:
+        return pick_element(l[0])+[l[1]]
+    else:
+        return pick_element(l[0])+pick_element(l[1])
+        
+def unroot(tree):
+    '''
+    Input: tree= rooted tree
+    Output: unrooted tree
+    '''
+    if type(tree[0])==int and type(tree[1])!=int:
+        if type(tree[1][0])==int:
+            return pick_element([tree[0],tree[1][0]])+pick_element(tree[1][1])
+        return pick_element(tree[1][0])+pick_element([tree[0],tree[1][1]])
+    if type(tree[1])==int and type(tree[0])!=int:
+        if type(tree[0][0])==int:
+            return pick_element([tree[0][0],tree[1]])+pick_element(tree[0][1])
+        return pick_element(tree[0][0])+pick_element([tree[1],tree[0][1]])
+    unroot_tree=pick_element(tree[0])+pick_element(tree[1])
+    return unroot_tree
 
 def parsimonious_Sank(tree_list,data,alphabet,cost_matrix):
     '''
@@ -137,6 +174,7 @@ def parsimonious_Sank(tree_list,data,alphabet,cost_matrix):
             - data: matrix which represent all the Character of each species, species in the row and character in the column    
             - alphabet : alphabet  of allowed character states
             - cost: cost matrix
+    Output: most parsimonious unrooted tree
     '''
     minim=Sankoff_tree(tree_list[0],data,alphabet,cost_matrix) 
     most_parsimonious=[tree_list[0]]
@@ -147,10 +185,10 @@ def parsimonious_Sank(tree_list,data,alphabet,cost_matrix):
             minim=score
         elif score==minim:
             most_parsimonious.append(tree)
-    return most_parsimonious, minim
+    return((unroot(most_parsimonious[0]), minim))
 
 
-## SIMULATED DATA GENERATION
+# SIMULATED DATA GENERATION
 
 def jukesCantor(genome,gen_time):
   """
@@ -186,7 +224,6 @@ def jukesCantor(genome,gen_time):
        raise Exception("Invalid input genome")
   persistence_prob=(3.*M.exp(-gen_time)+1.)/4.
   new_genome=[]
-  #print("Genome=",genome)
   for base in genome:
     p=random.random()
     if p < persistence_prob:
