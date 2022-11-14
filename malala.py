@@ -138,36 +138,6 @@ def Sankoff_tree(tree, data, alphabet, cost_matrix):
 
 # MOST PARSIMONIOUS TREE (SANKOFF)
 
-def pick_element(l):
-    '''
-    Input: list
-    Output: list of element in l
-    '''
-    if type(l[0])==int and type(l[1])==int:
-        return [l]
-    elif type(l[0])==int and type(l[1])!=int:
-        return [l[0]]+pick_element(l[1])
-    elif type(l[1])==int and type(l[0])!=int:
-        return pick_element(l[0])+[l[1]]
-    else:
-        return pick_element(l[0])+pick_element(l[1])
-        
-def unroot(tree):
-    '''
-    Input: tree= rooted tree
-    Output: unrooted tree
-    '''
-    if type(tree[0])==int and type(tree[1])!=int:
-        if type(tree[1][0])==int:
-            return pick_element([tree[0],tree[1][0]])+pick_element(tree[1][1])
-        return pick_element(tree[1][0])+pick_element([tree[0],tree[1][1]])
-    if type(tree[1])==int and type(tree[0])!=int:
-        if type(tree[0][0])==int:
-            return pick_element([tree[0][0],tree[1]])+pick_element(tree[0][1])
-        return pick_element(tree[0][0])+pick_element([tree[1],tree[0][1]])
-    unroot_tree=pick_element(tree[0])+pick_element(tree[1])
-    return unroot_tree
-
 def parsimonious_Sank(tree_list,data,alphabet,cost_matrix):
     '''
     Input: 
