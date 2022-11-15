@@ -2,7 +2,7 @@ import copy
 import random
 import math as M
 import numpy as np 
-from canonical import *
+
 
 #  TREE GENERATOR FUNCTIONS
 
@@ -156,7 +156,7 @@ def parsimonious_Sank(tree_list,data,alphabet,cost_matrix):
             minim=score
         elif score==minim:
             most_parsimonious.append(tree)
-    return((canonical_rooted_list(most_parsimonious[0]), minim))
+    return(most_parsimonious, minim)
 
 
 # SIMULATED DATA GENERATION
